@@ -13,7 +13,7 @@ export GOOS=linux
 export GOARCH=amd64
 export GOAMD64=v1
 export CGO_CFLAGS="${CGO_CFLAGS:--march=x86-64}"
-go build -trimpath -buildmode=c-shared -ldflags="-s -w" -o build/image-param-injector.so .
+go build -buildvcs=false -trimpath -buildmode=c-shared -ldflags="-s -w" -o build/image-param-injector.so .
 rm -f build/image-param-injector.h
 
 file build/image-param-injector.so
