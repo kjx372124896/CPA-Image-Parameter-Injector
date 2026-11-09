@@ -17,13 +17,29 @@ jobs:
       - uses: actions/checkout@v4
       - uses: actions/setup-go@v5
         with:
-          go-version: '1.26.10'
+          go-version: '1.26.8'
       - name: Install MinGW cross compiler
         run: sudo apt-get update && sudo apt-get install -y gcc-mingw-w64-x86-64
       - name: Test
         run: go test -v ./...
       - name: Build Windows amd64 plugin
-        run: ./build-windows.sh
+        run: bash ./build-windows.sh
+      - name: Build Linux amd64 plugin (GLIBC 2.17 baseline)
+        shell: bash
+        run: |
+          set -euo pipefail
+          docker run --rm \
+            -v "$PWD:/src" \
+            -w /src \
+            quay.io/pypa/manylinux2014_x86_64 \
+            bash -euo pipefail -c '
+              go_archive="go1.26.8.linux-amd64.tar.gz"
+              curl -fsSL "https://go.dev/dl/${go_archive}" -o "/tmp/${go_archive}"
+              rm -rf /usr/local/go
+              tar -C /usr/local -xzf "/tmp/${go_archive}"
+              export PATH="/usr/local/go/bin:${PATH}"
+              bash ./build-linux.sh
+            '
       - name: Package and checksum release assets
         shell: bash
         run: |
@@ -34,11 +50,14 @@ jobs:
           fi
           version="${release_tag#v}"
           echo "RELEASE_TAG=${release_tag}" >> "$GITHUB_ENV"
-          asset="image-param-injector_${version}_windows_amd64.zip"
           mkdir -p release
           cp build/image-param-injector.dll release/image-param-injector.dll
-          (cd release && zip -9 "../${asset}" image-param-injector.dll)
-          sha256sum "${asset}" > checksums.txt
+          cp build/image-param-injector.so release/image-param-injector.so
+          windows_asset="image-param-injector_${version}_windows_amd64.zip"
+          linux_asset="image-param-injector_${version}_linux_amd64.zip"
+          (cd release && zip -9 "../${windows_asset}" image-param-injector.dll)
+          (cd release && zip -9 "../${linux_asset}" image-param-injector.so)
+          sha256sum "${windows_asset}" "${linux_asset}" > checksums.txt
       - name: Publish GitHub Release
         uses: softprops/action-gh-release@v2
         with:
@@ -46,4 +65,6 @@ jobs:
           generate_release_notes: true
           files: |
             image-param-injector_*_windows_amd64.zip
+            image-param-injector_*_linux_amd64.zip
             checksums.txt
+          overwrite_files: true

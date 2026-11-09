@@ -5,7 +5,7 @@
 ## 兼容性
 
 - 已验证核心版本：CLIProxyAPI 8.0.53。
-- 构建环境：Go 1.26.10，Windows amd64，插件 ABI v1 / schema 10。
+- 构建环境：Go 1.26.8，Windows amd64 / Linux amd64，插件 ABI v1 / schema 10。
 - GitHub 仓库：https://github.com/kjx372124896/CPA-Image-Parameter-Injector
 
 ## 当前支持
@@ -27,21 +27,36 @@ Prompt 注入是兼容性补偿，不是底层 API 参数的等价替代。它�
 
 ## 构建
 
-在 WSL Ubuntu 中安装 Go 1.26.x 和 gcc-mingw-w64-x86-64，然后执行：
+在 WSL Ubuntu 中安装 Go 1.26.x、gcc 和 gcc-mingw-w64-x86-64，然后按目标平台执行：
 
     ./build-windows.sh
 
-输出：build/image-param-injector.dll。
+Linux amd64 原生插件：
 
-## 安装到 Windows CPA
+    ./build-linux.sh
 
-把 DLL 放到 CPA 核心配置目录下的：
+正式 Release 使用 `manylinux2014_x86_64` 容器构建，并强制检查 GLIBC 2.17 基线，避免在较旧 Linux 云服务器上因 glibc 版本过高而无法加载。
 
-    plugins/windows/amd64/image-param-injector.dll
+Windows 输出：build/image-param-injector.dll。
+Linux 输出：build/image-param-injector.so。
+
+## 安装到 CPA
+
+Windows：`plugins/windows/amd64/image-param-injector.dll`
+
+Linux：`plugins/linux/amd64/image-param-injector.so`
+
+macOS 暂未提供构建包。
 
 在 config.yaml 的 plugins 节点中合并 config.example.yaml 里的 configs.image-param-injector 配置。不要覆盖现有 OAuth、API Key 或其他插件配置。
 
 确认 plugins.enabled: true，单插件 enabled: true。之后通过 CPA 插件管理接口检查 registered 和 effective_enabled。
+
+## 安装到 Windows CPA（手动）
+
+把 DLL 放到 CPA 核心配置目录下的：
+
+    plugins/windows/amd64/image-param-injector.dll
 
 ## 回滚
 
