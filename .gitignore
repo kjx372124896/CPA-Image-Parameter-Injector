@@ -1,0 +1,16 @@
+/build/
+/dist/
+/release/
+/test-config.yaml
+/test-core.*.log
+/mock-upstream.*.log
+/mock-upstream.pid
+/test-core.pid
+/last-upstream-request.json
+/*-response.json
+/*-response.txt
+/sample-*.png
+/go1.*.tar.gz
+*.dll
+*.so
+*.dylib

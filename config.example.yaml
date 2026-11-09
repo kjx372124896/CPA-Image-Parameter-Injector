@@ -1,0 +1,20 @@
+plugins:
+  enabled: true
+  dir: "plugins"
+  configs:
+    image-param-injector:
+      enabled: true
+      priority: 100
+      target_paths:
+        - "/v1/images/generations"
+        - "/v1/images/edits"
+      model_allowlist: []
+      position: "append"
+      inject_size: true
+      inject_n: true
+      inject_aspect_ratio: true
+      inject_quality: true
+      inject_style: true
+      inject_output_format: true
+      inject_background: true
+
